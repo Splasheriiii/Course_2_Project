@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Teams</title>
+    <title>Edit participator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
@@ -18,7 +18,7 @@
                         <a class="nav-link" th:href="@{/match/all}">Matches</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" th:href="@{/team/all}">Teams</a>
+                        <a class="nav-link" th:href="@{/team/all}">Teams</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/about}">About</a>
@@ -32,42 +32,21 @@
         </div>
     </nav>
     <div class="container mt-4">
-        <div class="row">
-            <a class="col-1 btn btn-primary" th:href="@{/team/create}">
-                Create
-            </a>
-        </div>
-        <div class="row">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Matches</th>
-                    <th>Wins</th>
-                    <th>Losses</th>
-                    <th>Winrate</th>
-                    <th>Total Score</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="teamModel: ${teams}">
-                    <td th:text="${teamModel.getId()}"/>
-                    <td th:text="${teamModel.getName()}"/>
-                    <td th:text="${teamModel.getMatches()}"/>
-                    <td th:text="${teamModel.getWins()}"/>
-                    <td th:text="${teamModel.getLosses()}"/>
-                    <td th:text="${teamModel.getWinrate()}"/>
-                    <td th:text="${teamModel.getScore()}"/>
-                    <td>
-                        <a class="btn btn-primary" th:href="@{/team/} + ${teamModel.getId()}">More</a>
-                        <a class="btn btn-secondary" th:href="@{/team/edit/} + ${teamModel.getId()}">Edit</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <form th:action="@{/match/part/save}" th:object="${participator}" method="post">
+            <div class="form-floating mb-3">
+                <select th:field="*{teamId}" id="teamInput" class="form-select">
+                    <option th:each="team: ${teams}" th:value="${team.getId()}" th:text="${team.getName()}"/>
+                </select>
+                <label for="teamInput">Team</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input id="scoreInput" type="number" th:field="*{score}" class="form-control"/>
+                <label for="scoreInput">Score</label>
+            </div>
+            <input type="hidden" th:field="*{id}"/>
+            <input type="hidden" th:field="*{matchId}"/>
+            <button type="submit" th:action="@{/match/part/save}" class="btn btn-primary">Save</button>
+        </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>

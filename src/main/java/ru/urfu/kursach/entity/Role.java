@@ -2,6 +2,7 @@ package ru.urfu.kursach.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,6 @@ public class Role {
     private Long id;
     @Column(nullable = false, unique = true)
     private String name;
-    @OneToMany()
+    @ManyToMany(mappedBy = "roles")
     private List<User> users = new ArrayList<>();
 }

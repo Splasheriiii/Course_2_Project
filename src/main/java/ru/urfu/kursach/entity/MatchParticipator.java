@@ -8,15 +8,19 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 @Table(name = "match_participator")
 public class MatchParticipator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "team_id", nullable = false)
-    private Long teamId;
-    @Column(name = "match_id", nullable = false)
-    private Long matchId;
     @Column(nullable = false)
     private Integer score;
+
+    @ManyToOne
+    @JoinColumn(name="team_id")
+    private Team team;
+    @ManyToOne
+    @JoinColumn(name="match_id")
+    private Match match;
 }

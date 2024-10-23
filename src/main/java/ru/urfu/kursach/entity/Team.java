@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -15,26 +16,15 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "teams")
-public class Team {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(nullable = false)
+public class Team extends UserSpecific {
+    @Column(nullable = false, unique = true)
     private String name;
-    @Column(nullable = true)
+    @Column(nullable = true, length = 1_000_000)
     private String logo;
 
-    @ManyToOne
-    private User user;
-
-    @OneToMany
+    @OneToMany(mappedBy = "team")
     private List<Player> players;
+    @OneToMany(mappedBy = "team")
+    private List<MatchParticipator> matchParticipation;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "match_participator",
-            joinColumns = { @JoinColumn(name = "team_id", referencedColumnName = "id") },
-            inverseJoinColumns = { @JoinColumn(name = "match_id", referencedColumnName = "id") }
-    )
-    private List<Match> matches;
 }

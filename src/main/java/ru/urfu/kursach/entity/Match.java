@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.util.List;
 
@@ -14,12 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "matches")
-public class Match {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @ManyToOne
-    private User user;
-    @ManyToMany(mappedBy = "matches")
-    private List<Team> teams;
+public class Match extends UserSpecific {
+    @OneToMany(mappedBy = "match")
+    private List<MatchParticipator> matchParticipation;
 }

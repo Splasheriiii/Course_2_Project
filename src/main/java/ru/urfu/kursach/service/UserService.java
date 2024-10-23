@@ -9,7 +9,6 @@ import java.util.List;
 
 @Service
 public interface UserService {
-    void UpdateRole(UserDto user, boolean isPromotion);
     void SaveUser(UserDto user);
     User findUserByEmail(String email);
     List<UserDto> findAllUsers();

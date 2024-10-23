@@ -5,50 +5,52 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.urfu.kursach.dto.UserDto;
+import ru.urfu.kursach.entity.Role;
 import ru.urfu.kursach.entity.User;
+import ru.urfu.kursach.repository.RoleRepository;
 import ru.urfu.kursach.repository.UserRepository;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final RoleService roleService;
+    private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserServiceImpl(RoleService roleService, UserRepository userRepository/*, PasswordEncoder passwordEncoder*/) {
-        this.roleService = roleService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder(); /*passwordEncoder*/;
-    }
+    private static final String[] ROLES = { "ROLE_ADMIN", "ROLE_USER", "ROLE_READ_ONLY" };
 
-    @Override
-    public void UpdateRole(UserDto dto, boolean isPromotion) {
-        var user = userRepository.findByEmail(dto.getEmail());
-        if (user != null) {
-            var role = roleService.changeRole(dto.getRights(), isPromotion);
-            if (role.isPresent()) {
-                user.setRole(role.get());
-                userRepository.save(user);
+    @Autowired
+    public UserServiceImpl(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+
+        for (var role: ROLES) {
+            if (roleRepository.findByName(role).isEmpty()) {
+                roleRepository.save(Role.builder().name(role).build());
             }
         }
     }
 
     @Override
     public void SaveUser(UserDto user) {
-        User new_user = new User();
-        new_user.setName(user.getFirstName() + " " + user.getLastName());
-        new_user.setEmail(user.getEmail());
-        new_user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Первый пользователь автоматически становится админом
-        new_user.setRole(roleService.getOrCreateRoleByRights(roleService.isAdminExists()
-                ? RoleService.MIN_RIGHTS
-                : RoleService.MAX_RIGHTS));
-        userRepository.save(new_user);
+        var u = User.builder()
+                .id(user.getId())
+                .name(user.getFirstName() + " " + user.getLastName())
+                .email(user.getEmail())
+                .password(user.getId() == null ? passwordEncoder.encode(user.getPassword()) : user.getPassword())
+                .roles(Stream.of(roleRepository.findByName(user.isRoleAdmin() ? "ROLE_ADMIN" : ""),
+                                 roleRepository.findByName(user.isRoleUser() ? "ROLE_USER" : ""),
+                                 roleRepository.findByName(user.isRoleReadOnly() ? "ROLE_READ_ONLY" : ""))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .toList())
+                .build();
+        userRepository.save(u);
     }
 
     @Override
@@ -59,15 +61,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAllUsers() {
         List<User> users = userRepository.findAll();
-        return users.stream().map(this::mapToUserDto).collect(Collectors.toList());
-    }
-
-    private UserDto mapToUserDto(User user) {
-        UserDto dto = new UserDto();
-        String[] name_parts = user.getName().split(" ");
-        dto.setFirstName(name_parts[0]);
-        dto.setLastName(name_parts[1]);
-        dto.setEmail(user.getEmail());
-        return dto;
+        return users.stream().map(UserDto::new).collect(Collectors.toList());
     }
 }

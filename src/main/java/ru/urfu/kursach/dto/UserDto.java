@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.urfu.kursach.entity.User;
+
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -23,5 +26,19 @@ public class UserDto {
     private String email;
     @NotEmpty(message = "Password should not be empty")
     private String password;
-    private byte rights = 0;
+    private boolean roleAdmin = false;
+    private boolean roleUser = false;
+    private boolean roleReadOnly = false;
+
+    public UserDto(User user) {
+        var parts = user.getName().split(" ");
+        firstName = parts[0];
+        lastName = parts[1];
+        email = user.getEmail();
+        password = user.getPassword();
+        id = user.getId();
+        roleAdmin = user.getRoles().stream().anyMatch(role -> Objects.equals(role.getName(), "ROLE_ADMIN"));
+        roleUser = user.getRoles().stream().anyMatch(role -> Objects.equals(role.getName(), "ROLE_USER"));
+        roleReadOnly = user.getRoles().stream().anyMatch(role -> Objects.equals(role.getName(), "ROLE_READ_ONLY"));
+    }
 }
